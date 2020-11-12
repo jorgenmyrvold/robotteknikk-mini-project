@@ -1,4 +1,5 @@
 import numpy as np
+import modern_robotics as mr
 
 np.set_printoptions(precision=4, suppress=False)
 
@@ -80,13 +81,12 @@ def analytical_IK(S, E, W):
     t234 = np.arctan2(np.dot(z_4, x_1), np.dot(z_4, y_1))
     theta_res[3] = t234 - (theta_res[1] + theta_res[2])
     
-    print(np.rad2deg(theta_res))
+    # print(np.rad2deg(theta_res))
     return theta_res
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":    
     for i in range(1, -2, -2):
         for j in range(1, -2, -2):
             for k in range(1, -2, -2):
                 analytical_IK(i, j, k)
-   
