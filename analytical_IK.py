@@ -78,6 +78,7 @@ def analytical_IK_simple():
     theta_res[3] = t234 - (theta_res[1] + theta_res[2])
     
     print(np.rad2deg(theta_res))
+    return theta_res
 
 
 def analytical_IK(S, E, W):
@@ -158,6 +159,7 @@ def analytical_IK(S, E, W):
     theta_res[3] = t234 - (theta_res[1] + theta_res[2])
     
     print(np.rad2deg(theta_res))
+    return theta_res
 
 
 if __name__ == "__main__":
