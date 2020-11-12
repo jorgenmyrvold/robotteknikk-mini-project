@@ -1,3 +1,6 @@
+import numpy as np
+import modern_robotics as mr
+
 l_1 = 0.425
 l_2 = 0.392
 w_1 = 0.109
