@@ -3,23 +3,42 @@ import modern_robotics as mr
 
 #Values are based on the UR5 robot in example 4.5 in Modern Robotics
 
-d1 = 89     #H1
-a2 = -425   #-L1
-a3 = 392    #-L2
-d4 = 109    #W1
-d5 = 95     #H2
-d6 = 82     #W2
-
-
+#Values needed to calculate the Forward Kinematics with the DH convention
+W1 = 109 #[mm]
+W2 = 82
+L1 = 425
+L2 = 392
+H1 = 89
+H2 = 95
+d1 = H1
+a2 = -L1
+a3 = -L2
+d4 = W1
+d5 = H2
+d6 = W2
 alist = np.array([0, a2, a3, 0, 0, 0])
 alphalist = np.array([np.pi/2, 0, 0, np.pi/2, -np.pi/2, 0])
 dlist = np.array([d1, 0, 0, d4, d5, d6])
 thetalist = np.array([0, 0, 0, 0, 0, 0])
 
-def forward_kinematic_PoE():
-    
+#Values needed to calculate the Forward Kinematics with the PoE computations
+Slist = np.array([[0, 0, 1, 0, 0, 0],
+                [0, 1, 0, -H1, 0, 0],
+                [0, 1, 0, -H1, 0, L1],
+                [0, 1, 0, -H1, 0, L1+L2],
+                [0, 0, -1, -W1, L1+L2, 0],
+                [0, 1, 1, H2-H1, 0, L1+L2]]).T
 
-    return True
+tlist = np.array([0, 0, 0, 0, 0, 0])
+
+M = np.array([[-1, 0, 0, L1+L2],
+              [0, 0, 1, W1+W2],
+              [0, 1, 0, H1-H2],
+              [0, 0, 0, 1]])
+
+def forward_kinematic_PoE(M, Slist, tlist):
+    T = mr.FKinSpace(M, Slist, tlist)
+    return T
 
 def forward_kinematic_DH(alist, alphalist, dlist, thetalist):
     #Solves the forward kinetmatics of a UR5 robot
@@ -53,9 +72,10 @@ def forward_kinematic_DH(alist, alphalist, dlist, thetalist):
     return T06
 
 if __name__ == "__main__":
-    #T06_PoE =
+    T06_PoE = np.matrix.round(forward_kinematic_PoE(M, Slist, tlist), 0, None)
     T06_DH = np.matrix.round(forward_kinematic_DH(alist, alphalist, dlist, thetalist), 0, None)
 
-    print('The matrix T_06 found by the Power of Exponentials computations is:\n')
-    print('The matrix T_06 found by the Denavit Hartenberg convention is:\n')
+    print('The matrix T_06 found by the Power of Exponentials computations is:')
+    print(T06_PoE)
+    print('\nThe matrix T_06 found by the Denavit Hartenberg convention is:')
     print(T06_DH)
