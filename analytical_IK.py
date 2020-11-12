@@ -90,3 +90,5 @@ if __name__ == "__main__":
             for k in range(1, -2, -2):
                 analytical_IK(i, j, k)
    
+
+
