@@ -1,6 +1,9 @@
 import numpy as np
 import modern_robotics as mr
 
+np.set_printoptions(precision = 4, suppress = True)
+
+
 #Values are based on the UR5 robot in example 4.5 in Modern Robotics
 
 #Values needed to calculate the Forward Kinematics with the DH convention
@@ -37,7 +40,27 @@ M = np.array([[-1, 0, 0, L1+L2],
               [0, 0, 0, 1]])
 
 def forward_kinematic_PoE(M, Slist, tlist):
-    T = mr.FKinSpace(M, Slist, tlist)
+    T = np.eye(4)
+
+    #Creates a list over the [S_i] matrices based on the Slist
+    S_bracket_list = np.array([mr.VecTose3(Slist[0]),
+                            mr.VecTose3(Slist[1]),
+                            mr.VecTose3(Slist[2]),
+                            mr.VecTose3(Slist[3]),
+                            mr.VecTose3(Slist[4]),
+                            mr.VecTose3(Slist[5])])
+
+    #Creates a list over the exp{[S_i]omega_i} based on the [S_i] matrices
+    Elist = np.array([mr.MatrixExp6(S_bracket_list[0]),
+                    mr.MatrixExp6(S_bracket_list[1]),
+                    mr.MatrixExp6(S_bracket_list[2]),
+                    mr.MatrixExp6(S_bracket_list[3]),
+                    mr.MatrixExp6(S_bracket_list[4]),
+                    mr.MatrixExp6(S_bracket_list[5])])
+
+    for i in Elist:
+        T = T @ i
+    T = T @ M
     return T
 
 def forward_kinematic_DH(alist, alphalist, dlist, thetalist):
@@ -72,10 +95,12 @@ def forward_kinematic_DH(alist, alphalist, dlist, thetalist):
     return T06
 
 if __name__ == "__main__":
-    T06_PoE = np.matrix.round(forward_kinematic_PoE(M, Slist, tlist), 0, None)
-    T06_DH = np.matrix.round(forward_kinematic_DH(alist, alphalist, dlist, thetalist), 0, None)
+    T06_PoE = forward_kinematic_PoE(M, Slist, tlist)
+    T06_DH = forward_kinematic_DH(alist, alphalist, dlist, thetalist)
 
-    print('The matrix T_06 found by the Power of Exponentials computations is:')
+    print('The matrix T_06 found by the function FKinSpace is:')
+    print(mr.FKinSpace(M, Slist, tlist))
+    print('\nThe matrix T_06 found by the Power of Exponentials computations is:')
     print(T06_PoE)
     print('\nThe matrix T_06 found by the Denavit Hartenberg convention is:')
     print(T06_DH)
