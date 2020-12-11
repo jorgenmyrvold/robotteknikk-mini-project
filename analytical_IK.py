@@ -4,7 +4,7 @@ import modern_robotics as mr
 np.set_printoptions(precision=4, suppress=False)
 
 
-def analytical_IK(S, E, W):
+def analytical_IK(t, S, E, W):
     '''
     param:
         S: 1 = Sholder left, -1 = sholder right
@@ -12,34 +12,13 @@ def analytical_IK(S, E, W):
         W: 1 = Wrist not flipped, -1 = wrist flipped
     '''
     
-    d1 = 0.089
-    a2 = -0.425
-    a3 = -0.392
-    d4 = 0.109
-    d5 = 0.095
-    d6 = 0.082
-
     # Resulting theta values. Filled inn when a value is found
     theta_res = np.zeros(6)     # joint 1 has index 0 and joint 6 has index 5
 
-    # Denavit-Hartenberg parameters for the UR5 robot
-    a = np.array([0, a2, a3, 0, 0, 0])
-    alpha = np.array([np.pi/2, 0, 0, np.pi/2, -np.pi/2, 0])
-    d = np.array([d1, 0, 0, d4, d5, d6])
-
-    # Theta values for home-position. NB: Not zero pos
-    theta_home = np.array([0, -np.pi/2, -np.pi/2, -np.pi/2, np.pi/2, 0]).T
-
-    # Transformation matrix from 0 to end effector e.
-    T_0e = np.array([[0, -1, 0, -a[2]+d[4]],        # also written as
-                    [-1, 0, 0, -d[3]],              # T_0e = [[n_e, s_e, a_e, p_e],
-                    [0, 0, -1, d[0]-a[1]-d[5]],     #         [0,   0,   0,   1]]
-                    [0, 0, 0, 1]])
-
-    n_e = T_0e[:3, 0]
-    s_e = T_0e[:3, 1]
-    a_e = T_0e[:3, 2]
-    p_e = T_0e[:3, 3]
+    n_e = t[:3, 0]
+    s_e = t[:3, 1]
+    a_e = t[:3, 2]
+    p_e = t[:3, 3]
 
     p_5 = p_e - d5*a_e
     angle_1 = np.arctan2(S * p_5[1], S * p_5[0])   # angle = atan2(y5, x5)
@@ -76,17 +55,31 @@ def analytical_IK(S, E, W):
     s2 = (p_v * (a2 + a3 * c3) - p_h * a3 * s3) / (p_h**2 + p_v**2)
     theta_res[1] = np.arctan2(s2, c2)
 
-
     # t4 is found by computing t234
     t234 = np.arctan2(np.dot(z_4, x_1), np.dot(z_4, y_1))
     theta_res[3] = t234 - (theta_res[1] + theta_res[2])
     
-    # print(np.rad2deg(theta_res))
     return theta_res
 
 
 if __name__ == "__main__":    
+    d1 = 0.089    # Robot dimentions. These are set by 
+    a2 = -0.425   # the robots physical properties.
+    a3 = -0.392
+    d4 = 0.109
+    d5 = 0.095
+    d6 = 0.082
+
+    a = np.array([0, a2, a3, 0, 0, 0])
+    d = np.array([d1, 0, 0, d4, d5, d6])
+    
+    T = np.array([[0, -1, 0, -a[2]+d[4]],      # The DH representation of 
+                  [-1, 0, 0, -d[3]],           # the wanted configuration
+                  [0, 0, -1, d[0]-a[1]-d[5]],
+                  [0, 0, 0, 1]])
+    
     for i in range(1, -2, -2):
         for j in range(1, -2, -2):
             for k in range(1, -2, -2):
-                analytical_IK(i, j, k)
+                print(analytical_IK(T, i, j, k))
+    
